@@ -2,17 +2,20 @@ let x_vals = [];
 let y_vals = [];
 
 let numberOfCoefficients = 4;
+const minCoefficients = 1;
+const maxCoefficients = 10;
+
 let coefficients = [];
 
-const learningRate = 0.2;
-const optimizer = tf.train.adam(learningRate);
+let learningRate = 0.2;
+const learningRateStep = 0.01;
+const minLearningRate = 0.01;
+const maxLearningRate = 1;
+let optimizer = tf.train.adam(learningRate);
 
 function setup() {
 
-  for(let i = 0; i<numberOfCoefficients; i++){
-
-    coefficients.push(tf.variable(tf.scalar(random(1))));
-  }
+  initializeCoefficients();
 
   createCanvas(windowWidth, windowHeight);
 
@@ -21,6 +24,60 @@ function setup() {
 function draw() {
   
   background(0);
+
+  strokeWeight(2);
+  stroke(50);
+  line(width/2, 0, width/2, height);
+  line(0, height/2, width, height/2);
+
+
+
+  noStroke();
+  fill(150);
+  textAlign(LEFT);
+  textSize(24);
+  textStyle(BOLD);
+  text("Polynomial curve fitting with Tensorflow.js", 10, 35);
+  textSize(18);
+  textStyle(NORMAL);
+  text("Press the up ⬆️ or down ⬇️ arrow keys to increse or decrease the polynomial degree: " + (numberOfCoefficients-1), 10, 70);
+
+  text("Press the left ⬅️ or right ➡️ arrow keys to adjust the learning rate: " + Math.round(learningRate*100)/100, 10, 100);
+
+  text("Click on the screen to add points to fit the curve to.", 10, 130);
+
+  text("Press 'r' to reset the canvas.", 10, 160);
+
+
+
+  let polynomial = "";
+
+  for(let i = numberOfCoefficients-1; i>=0; i--){
+
+    let c = coefficients[i].dataSync();
+
+    if(i === 0){
+
+      polynomial += Math.round(c[0]*100)/100;
+
+    }
+    if(i === 1){
+
+      polynomial += (Math.round(c[0]*100)/100) + "*x + "; 
+
+    }
+    if(i > 1){
+
+      polynomial += (Math.round(c[0]*100)/100) + "*x^"+ i + " + ";
+
+    }
+    
+  }
+
+  textAlign(CENTER);
+  text(polynomial, width/2, height-35);
+
+
 
   tf.tidy(()=> {
     if(x_vals.length>0){
@@ -70,7 +127,7 @@ function draw() {
     vertex(x,y);
 
   }
-  endShape();
+  endShape();  
 
 }
 
@@ -103,4 +160,53 @@ function loss(pred, labels){
   return pred.sub(labels).square().mean();
 }
 
+function initializeCoefficients(){
 
+  coefficients = [];
+
+  for(let i = 0; i<numberOfCoefficients; i++){
+    coefficients.push(tf.variable(tf.scalar(random(1))));
+  }
+}
+
+
+function keyPressed(){
+
+  if(keyCode === UP_ARROW && numberOfCoefficients < maxCoefficients){
+
+    numberOfCoefficients++;
+    initializeCoefficients();
+  
+  }
+
+  if(keyCode === DOWN_ARROW && numberOfCoefficients > minCoefficients){
+    
+    numberOfCoefficients--;
+    initializeCoefficients();
+
+  }
+  if(keyCode === RIGHT_ARROW && learningRate < maxLearningRate){
+
+    learningRate += learningRateStep;
+    optimizer = tf.train.adam(learningRate);
+  
+  }
+
+  if(keyCode === LEFT_ARROW && learningRate > minLearningRate){
+    
+    learningRate -= learningRateStep;
+    optimizer = tf.train.adam(learningRate);
+
+  }
+
+  if(key === 'r'){
+
+    x_vals = [];
+    y_vals = [];
+    numberOfCoefficients = 4;
+    learningRate = 0.2;
+    initializeCoefficients();
+
+  }
+
+}
