@@ -8,8 +8,8 @@ const maxCoefficients = 10;
 let coefficients = [];
 
 let learningRate = 0.2;
-const learningRateStep = 0.01;
-const minLearningRate = 0.01;
+const learningRateStep = 0.1;
+const minLearningRate = 0.1;
 const maxLearningRate = 1;
 let optimizer = tf.train.adam(learningRate);
 
