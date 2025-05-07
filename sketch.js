@@ -1,18 +1,18 @@
 let x_vals = [];
 let y_vals = [];
 
-let m, b;
+let numberOfCoefficients = 4;
+let coefficients = [];
 
 const learningRate = 0.2;
-const optimizer = tf.train.sgd(learningRate);
+const optimizer = tf.train.adam(learningRate);
 
 function setup() {
 
+  for(let i = 0; i<numberOfCoefficients; i++){
 
-  m = tf.variable(tf.scalar(random(1)));
-  b = tf.variable(tf.scalar(random(1)));
-
-
+    coefficients.push(tf.variable(tf.scalar(random(1))));
+  }
 
   createCanvas(windowWidth, windowHeight);
 
@@ -45,23 +45,32 @@ function draw() {
 
   }
 
-  const lineX  = [-1, 1];
-  const ys = tf.tidy(() => predict(lineX));
-  
 
-  let x1 = map(lineX[0], -1, 1, 0, width);
-  let x2 = map(lineX[1], -1, 1, 0, width);
+  let lineX = [];
+
+  for(let x = -1; x<=1; x+=0.01){
+    lineX.push(x);
+  }
+
+  const ys = tf.tidy(() => predict(lineX));
 
   let lineY = ys.dataSync();
 
   ys.dispose();
 
-  let y1 = map(lineY[0], -1, 1, height, 0);
-  let y2 = map(lineY[1], -1, 1, height, 0);
-
+  beginShape();
+  noFill();
   strokeWeight(2);
   stroke(255);
-  line(x1, y1, x2, y2);
+  for(let i = 0; i<lineX.length; i++){
+
+    let x = map(lineX[i], -1, 1, 0, width);
+    let y = map(lineY[i], -1, 1, height, 0);
+
+    vertex(x,y);
+
+  }
+  endShape();
 
 }
 
@@ -78,7 +87,14 @@ function mousePressed(){
 function predict(x){
 
   const xs = tf.tensor1d(x);
-  const ys = xs.mul(m).add(b);
+
+  let ys = tf.tensor1d([0]);
+
+  for(let i=0; i<numberOfCoefficients; i++){
+
+    ys = ys.add(xs.pow(tf.scalar(i)).mul(coefficients[i]));
+
+  }
 
   return ys;
 }
