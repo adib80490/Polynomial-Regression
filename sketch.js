@@ -13,6 +13,8 @@ const minLearningRate = 0.01;
 const maxLearningRate = 1;
 let optimizer = tf.train.adam(learningRate);
 
+const superscripts = ["", "𝒳 + ", "𝒳² + ", "𝒳³ + ", "𝒳⁴ + ", "𝒳⁵ + ", "𝒳⁶ + ", "𝒳⁷ + ", "𝒳⁸ + ", "𝒳⁹ + "];
+
 function setup() {
 
   initializeCoefficients();
@@ -56,21 +58,8 @@ function draw() {
 
     let c = coefficients[i].dataSync();
 
-    if(i === 0){
+    polynomial += (Math.round(c[0]*100)/100) + superscripts[i];
 
-      polynomial += Math.round(c[0]*100)/100;
-
-    }
-    if(i === 1){
-
-      polynomial += (Math.round(c[0]*100)/100) + "*x + "; 
-
-    }
-    if(i > 1){
-
-      polynomial += (Math.round(c[0]*100)/100) + "*x^"+ i + " + ";
-
-    }
     
   }
 
